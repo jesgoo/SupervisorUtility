@@ -5,6 +5,8 @@ import time
 
 import gevent
 
-while True:
-    print time.time(), sys.argv
-    gevent.sleep(1)
+with open('a.txt', 'w') as f:
+    while True:
+        sys.stdout.write('%f %s\n' % (time.time(), sys.argv))
+        sys.stdout.flush()
+        gevent.sleep(1)

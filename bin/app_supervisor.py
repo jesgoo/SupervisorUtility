@@ -38,12 +38,6 @@ app_config = {
                     'jedidiahyang@jesgoo.com'
                 ]
             },
-            'PROCESS_LOG_STDOUT': {
-                'notifier_type': 'relay_stdout',
-            },
-            'PROCESS_LOG_STDERR': {
-                'notifier_type': 'relay_stderr',
-            }
         },
         'notification_server': {
             'host': '127.0.0.1',
@@ -245,11 +239,11 @@ default_supervisord_config = collections.OrderedDict([
         ('user', (False, 'chrism', 'setuid to this UNIX account to run the program')),
         ('redirect_stderr', (False, True, 'redirect proc stderr to stdout (default false)')),
         ('stdout_logfile', (True, 'logs/supervisord.eventlistener.stdout.log', 'stdout log path, NONE for none; default AUTO')),
-        ('stdout_logfile_maxbytes', (True, '1MB', 'max # logfile bytes b4 rotation (default 50MB)')),
+        ('stdout_logfile_maxbytes', (True, '50MB', 'max # logfile bytes b4 rotation (default 50MB)')),
         ('stdout_logfile_backups', (True, 10, '# of stdout logfile backups (default 10)')),
         ('stdout_events_enabled', (False, True, 'emit events on stdout writes (default false)')),
         ('stderr_logfile', (True, 'logs/supervisord.eventlistener.stderr.log', 'stderr log path, NONE for none; default AUTO')),
-        ('stderr_logfile_maxbytes', (True, '1MB', 'max # logfile bytes b4 rotation (default 50MB)')),
+        ('stderr_logfile_maxbytes', (True, '50MB', 'max # logfile bytes b4 rotation (default 50MB)')),
         ('stderr_logfile_backups', (True, 10, '# of stderr logfile backups (default 10)')),
         ('stderr_events_enabled', (False, True, 'emit events on stderr writes (default false)')),
         ('environment', (False, 'A="1",B="2"', 'process environment additions')),
