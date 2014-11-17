@@ -28,8 +28,6 @@ app_config = {
         'process_name': os.path.splitext(os.path.basename(sys.argv[0]))[0] + '_eventlistener',
         'events': [
             'PROCESS_STATE_EXITED',
-            'PROCESS_LOG_STDOUT',
-            'PROCESS_LOG_STDERR',
         ],
         'event_handlers': {
             'PROCESS_STATE_EXITED': {
@@ -390,14 +388,13 @@ class EventHeader(object):
 
     def __init__(self, text):
         self._headers = dict(head.split(':', 1) for head in text.rstrip('\n').split(' ') if ':' in head)
-        self._to_int('ver')
         self._to_int('serial')
         self._to_int('poolserial')
         self._to_int('len')
 
     @property
     def dict(self):
-        return self._header
+        return self._headers
 
     def __getattr__(self, item):
         if item in self.__dict__:
@@ -423,29 +420,41 @@ class EventListener(object):
         self._handler = dict(map(lambda x: (x[0], self._make_notifier(**x[1])),
                                  filter(lambda x: x[0] in dir(supervisor.events.EventTypes),
                                         event_handlers.iteritems())))
-        self._simple_mail_url = 'http://%(host)s:%(port)d/%(simplemail)s' % \
-                                app_config('eventlistener', 'notification_server')
+        self._simple_mail_url = 'http://%(host)s:%(port)d/%(simplemail)s' % notification_server
+
+    @staticmethod
+    def _write_stdout(text):
+        sys.stdout.write(text)
+        sys.stdout.flush()
+
+    @staticmethod
+    def _write_stderr(text):
+        sys.stderr.write(text)
+        sys.stderr.flush()
 
     def run(self):
         try:
             while 1:
-                print >>sys.stdout, 'READY'
+                self._write_stdout('READY\n')
                 header_line = sys.stdin.readline()
-                print >>sys.stderr, header_line.rstrip('\n')
+                self._write_stderr(header_line)
                 header = EventHeader(header_line)
                 body_length = header.len
                 if body_length is None:
-                    print >>sys.stderr, '[ERROR] 缺少事件内容长度，不读取内容，跳过此条事件'
+                    self._write_stderr('[ERROR] 缺少事件内容长度，不读取内容，跳过此条事件\n')
                     continue
-                body = EventHeader(sys.stdin.read(int(body_length)))
+                body_content = sys.stdin.read(int(body_length))
+                self._write_stderr(body_content)
+                body = EventHeader(body_content)
                 if header.eventname is None:
-                    print >>sys.stderr, '[ERROR] 缺少事件名称，事件头部:', header_line
+                    self._write_stderr('[ERROR] 缺少事件名称，事件头部: %s\n' % (str(header_line),))
                     continue
                 handler = self._handler.get(header.eventname, None)
                 if handler:
                     ok, error = handler(event_header=header, event_body=body)
                     if not ok:
-                        print >>sys.stderr, '[ERROR] 处理事件失败:', error
+                        self._write_stderr('[ERROR] 处理事件失败: %s\n' % (error,))
+                self._write_stdout('READY\n')
         except KeyboardInterrupt:
             pass
         except SystemExit:

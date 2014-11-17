@@ -8,4 +8,4 @@ import gevent
 while True:
     sys.stdout.write('%f %s\n' % (time.time(), sys.argv))
     sys.stdout.flush()
-    gevent.sleep(1)
+    gevent.sleep(10)
